@@ -19,4 +19,15 @@ return [
     'An MCP token already exists for your account. Generate a new one to replace it. The current token is not shown again.' => 'Ya existe un token MCP para tu cuenta. Genera uno nuevo para reemplazarlo. El token actual no se vuelve a mostrar.',
     'New MCP token generated successfully'                                                                               => 'Nuevo token MCP generado correctamente',
     'Unable to generate MCP token'                                                                                       => 'No se pudo generar el token MCP',
+
+    // Accesos del gateway
+    'MCP access'                                                                                                         => 'Accesos MCP',
+    'Enable or disable each MCP endpoint for your own token. Only endpoints your role allows are shown. A disabled endpoint cannot be called.' => 'Activa o desactiva cada acceso MCP de tu propio token. Solo se muestran los que tu rol permite. Un acceso desactivado no se puede usar.',
+    'Save access'                                                                                                        => 'Guardar accesos',
+    'MCP access saved'                                                                                                   => 'Accesos MCP guardados',
+    'Could not save MCP access'                                                                                          => 'No se pudieron guardar los accesos MCP',
+    'Read'                                                                                                               => 'Lectura',
+    'Task changes'                                                                                                       => 'Cambios en tareas',
+    'Board setup'                                                                                                        => 'Configuración del tablero',
+    'Projects'                                                                                                           => 'Proyectos',
 ];

@@ -48,8 +48,13 @@ class Plugin extends Base
             'generateToken',
             Role::APP_USER
         );
-        // All other actions fall back to Kanboard's APP_USER default, which
-        // effectively denies unauthenticated callers.
+
+        // saveGateway: the session user may toggle only their own endpoints
+        $this->applicationAccessMap->add(
+            'ModelContextProtocolController',
+            'saveGateway',
+            Role::APP_USER
+        );
     }
 
     public function onStartup()
@@ -65,6 +70,7 @@ class Plugin extends Base
             ],
             'Plugin\ModelContextProtocol\Model' => [
                 'McpTokenModel',
+                'McpEndpointGatewayModel',
             ],
         ];
     }
@@ -86,7 +92,7 @@ class Plugin extends Base
 
     public function getPluginVersion()
     {
-        return '1.1.3';
+        return '1.2.2';
     }
 
     public function getPluginHomepage()

@@ -4,13 +4,19 @@
 
     <?php
     // Always show the token of the session user, never the profile user.
-    // The real <form> is rendered from template:layout:bottom. Controls here
-    // only point at it, so they are not submitted with Kanboard's Save button.
+    // The real <form> elements are rendered from template:layout:bottom.
+    // Controls here only point at them, so Kanboard's Save button does not
+    // submit them and saving access does not rotate the token.
     $this->task->memoryCache->set('mcp_integration_forms', true);
     $mcpUserId   = (int) $this->task->userSession->getId();
     $mcpHasToken = $this->task->mcpTokenModel->hasToken($mcpUserId);
     $mcpToken    = $this->task->mcpTokenModel->takeReveal($mcpUserId);
     $baseUrl     = $this->helper->url->base();
+    $mcpGatewayRows = $this->task->mcpEndpointGatewayModel->rowsForUser($mcpUserId);
+    $mcpGroups = [];
+    foreach ($mcpGatewayRows as $mcpRow) {
+        $mcpGroups[$mcpRow['group']][] = $mcpRow;
+    }
     ?>
 
     <?php if ($mcpToken): ?>
@@ -70,4 +76,29 @@
         </button>
 
     <?php endif; ?>
+</div>
+
+<div class="panel" id="mcp-access-panel">
+    <h3><?= t('MCP access') ?></h3>
+    <p><?= t('Enable or disable each MCP endpoint for your own token. Only endpoints your role allows are shown. A disabled endpoint cannot be called.') ?></p>
+
+    <?php foreach ($mcpGroups as $mcpGroup => $mcpGroupRows): ?>
+        <h4><?= $this->text->e(t($mcpGroup)) ?></h4>
+        <?php foreach ($mcpGroupRows as $mcpEndpoint): ?>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox"
+                           name="endpoints[]"
+                           form="mcp-gateway-form"
+                           value="<?= $this->text->e($mcpEndpoint['name']) ?>"
+                           <?= $mcpEndpoint['enabled'] ? 'checked="checked"' : '' ?>>
+                    <code><?= $this->text->e($mcpEndpoint['name']) ?></code>
+                </label>
+            </div>
+        <?php endforeach ?>
+    <?php endforeach ?>
+
+    <button type="submit" form="mcp-gateway-form" class="btn btn-default">
+        <?= t('Save access') ?>
+    </button>
 </div>

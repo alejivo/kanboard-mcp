@@ -2,7 +2,9 @@
 
 namespace Kanboard\Plugin\ModelContextProtocol\Schema;
 
-const VERSION = 3;
+require_once __DIR__ . '/../Core/McpCatalog.php';
+
+const VERSION = 4;
 
 function version_1($pdo)
 {
@@ -51,6 +53,50 @@ function version_3($pdo)
     }
 
     $pdo->exec('ALTER TABLE mcp_tokens DROP COLUMN token_plain');
+}
+
+function version_4($pdo)
+{
+    version_3($pdo);
+
+    $pdo->exec('
+        CREATE TABLE IF NOT EXISTS mcp_endpoint_grants (
+            user_id  INT         NOT NULL,
+            endpoint VARCHAR(64) NOT NULL,
+            enabled  TINYINT     NOT NULL,
+            PRIMARY KEY (user_id, endpoint),
+            KEY idx_mcp_endpoint_grants_user (user_id)
+        ) ENGINE=InnoDB CHARSET=utf8
+    ');
+
+    $insert = $pdo->prepare(
+        'INSERT IGNORE INTO mcp_endpoint_grants (user_id, endpoint, enabled) VALUES (:user_id, :endpoint, 1)'
+    );
+    mcp_backfill_write_grants($pdo, $insert);
+}
+
+/**
+ * Enable every write-class catalog endpoint for users who already have a token.
+ * Names come from the catalog constant. user_id and endpoint are bound parameters.
+ */
+function mcp_backfill_write_grants($pdo, $insert)
+{
+    $users = $pdo->query('SELECT user_id FROM mcp_tokens');
+    if ($users === false) {
+        return;
+    }
+
+    foreach ($users->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+        foreach (\Kanboard\Plugin\ModelContextProtocol\Core\McpCatalog::ENDPOINTS as $endpoint) {
+            if ($endpoint['defaultEnabled'] === true) {
+                continue;
+            }
+            $insert->execute([
+                ':user_id' => (int) $row['user_id'],
+                ':endpoint' => $endpoint['name'],
+            ]);
+        }
+    }
 }
 
 function mcp_mysql_create_tokens($pdo)
